@@ -38,8 +38,7 @@ void flatit(FILE *source, FILE *dest) {
 
       if ((input_file = fopen(line, "r")) == NULL) {
         fprintf(stderr, "Unable to open file: %s\n", line);
-        free(line);
-        return;
+        break;
       }
 
       printf(" -> %s\n", line);
