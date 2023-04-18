@@ -5,20 +5,6 @@
 
 #define DEST_FILE "a.tex"
 
-void getpath(char *line) {
-
-  char *start = strstr(line, "{") + 1;
-  char *end = strstr(start, "}");
-
-  int i = 0;
-  while (start + i < end) {
-    line[i] = *(start + i);
-    i++;
-  }
-  line[i] = '\0';
-  strcat(line, ".tex");
-}
-
 void flatit(FILE *source, FILE *dest) {
 
   char *line = NULL;
@@ -26,13 +12,21 @@ void flatit(FILE *source, FILE *dest) {
   while (getline(&line, &len, source) != -1) {
 
     char *input_ptr = strstr(line, "\\input{");
-    char *comment_ptr = strstr(line, "%");
+    char *comment_ptr = strchr(line, '%');
 
     if (!input_ptr || (comment_ptr && (comment_ptr < input_ptr)))
       fputs(line, dest);
     else {
 
-      getpath(line);
+      char *start = strchr(line, '{') + 1;
+      char *end = strchr(start, '}');
+
+      int i;
+      for (i = 0; start + i < end; i++)
+        line[i] = *(start + i);
+      line[i] = '\0';
+
+      strcat(line, ".tex");
 
       FILE *input_file;
 
@@ -69,15 +63,21 @@ int main(int argc, char **argv) {
 
   if ((source = fopen(source_path, "r")) == NULL) {
     fprintf(stderr, "Unable to open file: %s\n", source_path);
-  } else if ((dest = fopen(DEST_FILE, "w")) == NULL) {
+    return EXIT_FAILURE;
+  }
+
+  if ((dest = fopen(DEST_FILE, "w")) == NULL) {
     fprintf(stderr, "Unable to open file: %s\n", DEST_FILE);
     fclose(source);
-  } else {
-    printf("Input file: %s\n", source_path);
-    flatit(source, dest);
-    fclose(dest);
-    fclose(source);
+    return EXIT_FAILURE;
   }
+
+  printf("Input file: %s\n", source_path);
+
+  flatit(source, dest);
+
+  fclose(dest);
+  fclose(source);
 
   if (errno != 0) {
     remove(DEST_FILE);
