@@ -11,6 +11,9 @@ void flatit(FILE *source, FILE *dest) {
   size_t len = 0;
   while (getline(&line, &len, source) != -1) {
 
+    if (errno != 0)
+      break;
+
     char *input_ptr = strstr(line, "\\input{");
     char *comment_ptr = strchr(line, '%');
 
@@ -37,10 +40,7 @@ void flatit(FILE *source, FILE *dest) {
 
       printf(" -> %s\n", line);
 
-      char ch;
-      while ((ch = fgetc(input_file)) != EOF) {
-        fputc(ch, dest);
-      }
+      flatit(input_file, dest);
 
       fclose(input_file);
     }
