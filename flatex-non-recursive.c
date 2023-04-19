@@ -7,8 +7,8 @@
 
 void flatit(FILE *source, FILE *dest) {
 
-  char *line = NULL;
   size_t len = 0;
+  char *line = NULL;
   while (getline(&line, &len, source) != -1) {
 
     char *input_ptr = strstr(line, "\\input{");
@@ -38,8 +38,8 @@ void flatit(FILE *source, FILE *dest) {
       printf(" -> %s\n", line);
 
       char ch;
-      while ((ch = fgetc(input_file)) != EOF) {
-        fputc(ch, dest);
+      while ((ch = getc(input_file)) != EOF) {
+        putc(ch, dest);
       }
 
       fclose(input_file);

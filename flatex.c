@@ -1,23 +1,34 @@
 #include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define DEST_FILE "a.tex"
 
+bool isinput(char *line) {
+
+  char *input_ptr = strstr(line, "\\input{");
+  char *include_ptr = strstr(line, "\\include{");
+  char *comment_ptr = strchr(line, '%');
+
+  if ((input_ptr && (!comment_ptr || (input_ptr < comment_ptr))) ||
+      (include_ptr && (!comment_ptr || (include_ptr < comment_ptr))))
+    return true;
+  else
+    return false;
+}
+
 void flatit(FILE *source, FILE *dest) {
 
-  char *line = NULL;
-  size_t len = 0;
+  size_t len = 1024;
+  char *line = malloc(len);
   while (getline(&line, &len, source) != -1) {
 
     if (errno != 0)
       break;
 
-    char *input_ptr = strstr(line, "\\input{");
-    char *comment_ptr = strchr(line, '%');
-
-    if (!input_ptr || (comment_ptr && (comment_ptr < input_ptr)))
+    if (!isinput(line))
       fputs(line, dest);
     else {
 
@@ -52,7 +63,7 @@ void flatit(FILE *source, FILE *dest) {
 int main(int argc, char **argv) {
 
   if (argc != 2) {
-    printf("%s\n", "Usage: flatex <file>");
+    fprintf(stderr, "Usage: %s <file>\n", argv[0]);
     return EXIT_FAILURE;
   }
 
