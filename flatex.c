@@ -5,6 +5,7 @@
 #include <string.h>
 
 #define DEST_FILE "a.tex"
+#define MAX_DEPTH 7
 
 bool isinput(char *line) {
 
@@ -19,7 +20,7 @@ bool isinput(char *line) {
     return false;
 }
 
-void flatit(FILE *source, FILE *dest) {
+void flatit(FILE *source, FILE *dest, int *plevel) {
 
   size_t len = 1024;
   char *line = malloc(len);
@@ -31,6 +32,12 @@ void flatit(FILE *source, FILE *dest) {
     if (!isinput(line))
       fputs(line, dest);
     else {
+
+      if (++(*plevel) > MAX_DEPTH) {
+        fprintf(stderr, "Error: Recursion limit exceeded\n");
+        errno = 1;
+        break;
+      }
 
       char *start = strchr(line, '{') + 1;
       char *end = strchr(start, '}');
@@ -51,13 +58,14 @@ void flatit(FILE *source, FILE *dest) {
 
       printf(" -> %s\n", line);
 
-      flatit(input_file, dest);
+      flatit(input_file, dest, plevel);
 
       fclose(input_file);
     }
   }
 
   free(line);
+  --(*plevel);
 }
 
 int main(int argc, char **argv) {
@@ -83,9 +91,11 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
+  int level = 0;
+
   printf("Input file: %s\n", source_path);
 
-  flatit(source, dest);
+  flatit(source, dest, &level);
 
   fclose(dest);
   fclose(source);
