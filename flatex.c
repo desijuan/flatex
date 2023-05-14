@@ -22,6 +22,8 @@ bool isinput(char *line) {
 
 void flatit(FILE *source, FILE *dest, int *plevel) {
 
+  ++*plevel;
+
   size_t len = 1024;
   char *line = malloc(len);
   while (getline(&line, &len, source) != -1) {
@@ -33,7 +35,7 @@ void flatit(FILE *source, FILE *dest, int *plevel) {
       fputs(line, dest);
     else {
 
-      if (++(*plevel) > MAX_DEPTH) {
+      if (*plevel+1 > MAX_DEPTH) {
         fprintf(stderr, "Error: Recursion limit exceeded\n");
         errno = 1;
         break;
@@ -65,7 +67,7 @@ void flatit(FILE *source, FILE *dest, int *plevel) {
   }
 
   free(line);
-  --(*plevel);
+  --*plevel;
 }
 
 int main(int argc, char **argv) {
