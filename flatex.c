@@ -28,6 +28,8 @@ void flatit(char *source_path, FILE *dest, int *plevel) {
     return;
   }
 
+  printf(" %*s-> %s\n", 2*(*plevel), "", source_path);
+
   ++*plevel;
 
   size_t len = 1024;
@@ -57,8 +59,6 @@ void flatit(char *source_path, FILE *dest, int *plevel) {
 
       strcat(line, ".tex");
 
-      printf(" -> %s\n", line);
-
       flatit(line, dest, plevel);
     }
   }
@@ -83,11 +83,7 @@ int main(int argc, char **argv) {
 
   int level = 0;
 
-  char *source_path = argv[1];
-
-  printf("Input file: %s\n", source_path);
-
-  flatit(source_path, dest, &level);
+  flatit(argv[1], dest, &level);
 
   fclose(dest);
 
