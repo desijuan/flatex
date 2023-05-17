@@ -20,7 +20,13 @@ bool isinput(char *line) {
     return false;
 }
 
-void flatit(FILE *source, FILE *dest, int *plevel) {
+void flatit(char *source_path, FILE *dest, int *plevel) {
+
+  FILE *source;
+  if ((source = fopen(source_path, "r")) == NULL) {
+    fprintf(stderr, "Unable to open file: %s\n", source_path);
+    return;
+  }
 
   ++*plevel;
 
@@ -51,21 +57,13 @@ void flatit(FILE *source, FILE *dest, int *plevel) {
 
       strcat(line, ".tex");
 
-      FILE *input_file;
-
-      if ((input_file = fopen(line, "r")) == NULL) {
-        fprintf(stderr, "Unable to open file: %s\n", line);
-        break;
-      }
-
       printf(" -> %s\n", line);
 
-      flatit(input_file, dest, plevel);
-
-      fclose(input_file);
+      flatit(line, dest, plevel);
     }
   }
 
+  fclose(source);
   free(line);
   --*plevel;
 }
@@ -77,30 +75,21 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  char *source_path = argv[1];
-
-  FILE *source;
   FILE *dest;
-
-  if ((source = fopen(source_path, "r")) == NULL) {
-    fprintf(stderr, "Unable to open file: %s\n", source_path);
-    return EXIT_FAILURE;
-  }
-
   if ((dest = fopen(DEST_FILE, "w")) == NULL) {
     fprintf(stderr, "Unable to open file: %s\n", DEST_FILE);
-    fclose(source);
     return EXIT_FAILURE;
   }
 
   int level = 0;
 
+  char *source_path = argv[1];
+
   printf("Input file: %s\n", source_path);
 
-  flatit(source, dest, &level);
+  flatit(source_path, dest, &level);
 
   fclose(dest);
-  fclose(source);
 
   if (errno != 0) {
     remove(DEST_FILE);
