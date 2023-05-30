@@ -55,9 +55,29 @@ void flatit(char *source_path, FILE *dest, int *plevel) {
     if (errno != 0)
       break;
 
-    if (!isinput(line)) {
+    char *s;
 
-      char *s;
+    if ((s = isinput(line)) != NULL) {
+
+      if (*plevel + 1 > MAX_DEPTH) {
+        fprintf(stderr, "Error: Recursion limit exceeded\n");
+        errno = 1;
+        break;
+      }
+
+      char *p = line;
+      char *q = strchr(s, '{') + 1;
+      char *end = strchr(q, '}');
+
+      for (unsigned short offset = q - p; p + offset < end; p++)
+        *(p) = *(p + offset);
+      *p = '\0';
+
+      strcat(line, ".tex");
+
+      flatit(line, dest, plevel);
+    } else {
+
       if ((s = isincludepdf(line)) != NULL) {
 
         char *p = strchr(s, '{') + 1;
@@ -70,25 +90,6 @@ void flatit(char *source_path, FILE *dest, int *plevel) {
       }
 
       fputs(line, dest);
-    } else {
-
-      if (*plevel + 1 > MAX_DEPTH) {
-        fprintf(stderr, "Error: Recursion limit exceeded\n");
-        errno = 1;
-        break;
-      }
-
-      char *p = line;
-      char *q = strchr(p, '{') + 1;
-      char *end = strchr(q, '}');
-
-      for (unsigned short offset = q - p; p + offset < end; p++)
-          *(p) = *(p + offset);
-      *p = '\0';
-
-      strcat(line, ".tex");
-
-      flatit(line, dest, plevel);
     }
   }
 
