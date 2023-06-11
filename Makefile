@@ -1,9 +1,9 @@
 # flatex
 
-CC = gcc
-CFLAGS = -g -Wall
+CC := gcc
+CFLAGS := -g -Wall
 
-PREFIX = /usr/local
+PREFIX := /usr/local
 
 flatex: flatex.c
 	${CC} ${CFLAGS} -o $@ $<
