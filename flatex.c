@@ -7,7 +7,11 @@
 #define DEST_FILE "a.tex"
 #define MAX_DEPTH 7
 
-char *isinput(char *line) {
+char *is_input(char *line);
+char *is_includepdf(char *line);
+void flat_it(char *source_path, FILE *dest, int *plevel);
+
+char *is_input(char *line) {
 
   char *comment = strchr(line, '%');
   char *input = strstr(line, "\\input{");
@@ -21,7 +25,7 @@ char *isinput(char *line) {
   return NULL;
 }
 
-char *isincludepdf(char *line) {
+char *is_includepdf(char *line) {
 
   char *comment = strchr(line, '%');
   char *includepdf = strstr(line, "\\includepdf{");
@@ -35,7 +39,7 @@ char *isincludepdf(char *line) {
   return NULL;
 }
 
-void flatit(char *source_path, FILE *dest, int *plevel) {
+void flat_it(char *source_path, FILE *dest, int *plevel) {
 
   FILE *source;
   if ((source = fopen(source_path, "r")) == NULL) {
@@ -57,7 +61,7 @@ void flatit(char *source_path, FILE *dest, int *plevel) {
     if (errno != 0)
       break;
 
-    if ((q = isinput(line)) != NULL) {
+    if ((q = is_input(line)) != NULL) {
 
       if (*plevel + 1 > MAX_DEPTH) {
         fprintf(stderr, "Error: Recursion limit exceeded\n");
@@ -74,10 +78,10 @@ void flatit(char *source_path, FILE *dest, int *plevel) {
 
       strcat(line, ".tex");
 
-      flatit(line, dest, plevel);
+      flat_it(line, dest, plevel);
     } else {
 
-      if ((p = isincludepdf(line)) != NULL) {
+      if ((p = is_includepdf(line)) != NULL) {
 
         q = strrchr(p, '/') + 1;
         end = line + nread;
@@ -111,7 +115,7 @@ int main(int argc, char **argv) {
 
   int level = 0;
 
-  flatit(argv[1], dest, &level);
+  flat_it(argv[1], dest, &level);
 
   fclose(dest);
 
