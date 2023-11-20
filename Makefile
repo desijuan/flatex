@@ -1,24 +1,57 @@
-# flatex
+## flatex
 
 CC := gcc
 CFLAGS := -g -Wall
 
+SRCDIR := src
+BIN := flatex
+
+OBJDIR := obj
+OBJ := $(addprefix $(OBJDIR)/, flatex.o)
+
+TESTSDIR := tests
+TESTS := $(wildcard $(TESTSDIR)/*.c)
+TESTBINS := $(patsubst $(TESTSDIR)/%.c, $(TESTSDIR)/bin/%, $(TESTS))
+
 PREFIX := /usr/local
 
-flatex: flatex.c
-	${CC} ${CFLAGS} -o $@ $<
+### BIN #####
 
-clean:
-	rm -f flatex
+$(BIN): $(SRCDIR)/main.c $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $^
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(SRCDIR)/%.h | $(OBJDIR)
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+$(OBJDIR):
+	mkdir -p $@
+
+### TESTS ###
+
+$(TESTSDIR)/bin/%: $(TESTSDIR)/%.c $(OBJ) | $(TESTSDIR)/bin
+	$(CC) $(CFLAGS) -lcriterion -o $@ $^
+
+$(TESTSDIR)/bin:
+	mkdir -p $@
+
+test: $(BIN) $(TESTBINS)
+	for test in $(TESTBINS) ; do ./$$test ; done
+
+#############
 
 release: CFLAGS := -Wall -O2
-release: clean flatex
+release: clean $(BIN)
 
 install: release
-	mv flatex ${PREFIX}/bin
-	chmod 755 ${PREFIX}/bin/flatex
+	mv $(BIN) $(PREFIX)/bin
+	chmod 755 $(PREFIX)/bin/$(BIN)
 
 uninstall:
-	rm ${PREFIX}/bin/flatex
+	rm $(PREFIX)/bin/$(BIN)
 
-.PHONY: clean release install uninstall
+clean:
+	rm -f $(BIN) $(OBJ)
+
+#############
+
+.PHONY: test clean release install uninstall

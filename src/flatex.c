@@ -1,15 +1,11 @@
 #include <errno.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define DEST_FILE "a.tex"
-#define MAX_DEPTH 7
+#include "flatex.h"
 
-char *is_input(char *line);
-char *is_includepdf(char *line);
-void flat_it(char *source_path, FILE *dest, int *plevel);
+#define MAX_DEPTH 7
 
 char *is_input(char *line) {
 
@@ -98,32 +94,4 @@ void flat_it(char *source_path, FILE *dest, int *plevel) {
   fclose(source);
   free(line);
   --*plevel;
-}
-
-int main(int argc, char **argv) {
-
-  if (argc != 2) {
-    fprintf(stderr, "Usage: %s <file>\n", argv[0]);
-    return EXIT_FAILURE;
-  }
-
-  FILE *dest;
-  if ((dest = fopen(DEST_FILE, "w")) == NULL) {
-    fprintf(stderr, "Unable to open file: %s\n", DEST_FILE);
-    return EXIT_FAILURE;
-  }
-
-  int level = 0;
-
-  flat_it(argv[1], dest, &level);
-
-  fclose(dest);
-
-  if (errno != 0) {
-    remove(DEST_FILE);
-    return EXIT_FAILURE;
-  }
-
-  printf("Written to: %s\n", DEST_FILE);
-  return EXIT_SUCCESS;
 }
