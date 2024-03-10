@@ -1,4 +1,3 @@
 # flatex
 
-A small program to convert multiple latex files into one.
-
+A small program to merge multiple latex files into a single one.
