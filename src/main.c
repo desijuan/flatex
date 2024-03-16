@@ -4,32 +4,33 @@
 
 #include "flatex.h"
 
-#define DEST_FILE "a.tex"
-
 int main(int argc, char **argv) {
 
-  if (argc != 2) {
-    fprintf(stderr, "Usage: %s <file>\n", argv[0]);
-    return EXIT_FAILURE;
-  }
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s <source> <dest>\n", argv[0]);
+        return EXIT_FAILURE;
+    }
 
-  FILE *dest;
-  if ((dest = fopen(DEST_FILE, "w")) == NULL) {
-    fprintf(stderr, "Unable to open file: %s\n", DEST_FILE);
-    return EXIT_FAILURE;
-  }
+    const char *source_path = argv[1];
+    const char *dest_path = argv[2];
 
-  int level = 0;
+    FILE *dest_file;
+    if ((dest_file = fopen(dest_path, "w")) == NULL) {
+        fprintf(stderr, "Unable to open file: %s\n", dest_path);
+        return EXIT_FAILURE;
+    }
 
-  flat_it(argv[1], dest, &level);
+    int level = 0;
 
-  fclose(dest);
+    flat_it(source_path, dest_file, &level);
 
-  if (errno != 0) {
-    remove(DEST_FILE);
-    return EXIT_FAILURE;
-  }
+    fclose(dest_file);
 
-  printf("Written to: %s\n", DEST_FILE);
-  return EXIT_SUCCESS;
+    if (errno != 0) {
+        remove(dest_path);
+        return EXIT_FAILURE;
+    }
+
+    printf("Written to: %s\n", dest_path);
+    return EXIT_SUCCESS;
 }

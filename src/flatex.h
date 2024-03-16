@@ -5,6 +5,6 @@
 
 char *is_input(char *line);
 char *is_includepdf(char *line);
-void flat_it(char *source_path, FILE *dest, int *plevel);
+void flat_it(const char *source_path, FILE *dest, int *plevel);
 
 #endif // FLATEX
